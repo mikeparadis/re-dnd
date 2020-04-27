@@ -34,7 +34,8 @@ module Make = (Context: Context.T) => {
         ) =>
       switch (ctx->React.Ref.current.status) {
       | StandBy when Events.Mouse.(event->leftClick && !event->modifier) =>
-        [%log.debug "MouseDown"; ("ItemId", itemId)];
+        BrowserLogger.infoWithData(__MODULE__, "MouseDown", ("ItemId", itemId));
+        //[%log.debug "MouseDown"; ("ItemId", itemId)];
 
         let moveThreshold = 1.;
 
@@ -77,7 +78,8 @@ module Make = (Context: Context.T) => {
             > moveThreshold;
 
           if (moved) {
-            [%log.debug "MouseDown::Moved"; ("ItemId", itemId)];
+            BrowserLogger.infoWithData(__MODULE__, "MouseDown::Moved", ("ItemId", itemId));
+            //[%log.debug "MouseDown::Moved"; ("ItemId", itemId)];
 
             dropInitialSubscriptions();
             Helpers.clearSelection();
@@ -94,7 +96,8 @@ module Make = (Context: Context.T) => {
         and onInitialMouseUp = _ => dropInitialSubscriptions()
         and onInitialDrag = _ => dropInitialSubscriptions()
         and dropInitialSubscriptions = () => {
-          [%log.debug "DropInitialSubscriptions"; ("ItemId", itemId)];
+          BrowserLogger.infoWithData(__MODULE__, "DropInitialSubscriptions", ("ItemId", itemId));
+          //[%log.debug "DropInitialSubscriptions"; ("ItemId", itemId)];
           onInitialMouseMove->Events.unsubscribeFromMouseMove;
           onInitialMouseUp->Events.unsubscribeFromMouseUp;
           onInitialDrag->Events.unsubscribeFromDrag;
@@ -217,7 +220,8 @@ module Make = (Context: Context.T) => {
       () =>
         switch (prevStatus, ctx.status) {
         | (Some(StandBy), Collecting(_)) =>
-          [%log.debug "RegisterItem"; ("ItemId", itemId)];
+          BrowserLogger.infoWithData(__MODULE__, "RegisterItem", ("ItemId", itemId));
+          //[%log.debug "RegisterItem"; ("ItemId", itemId)];
           ctx.registerItem({
             id: itemId,
             containerId,

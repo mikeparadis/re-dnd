@@ -205,7 +205,6 @@ module Make = (Context: Context.T) => {
 
   module MouseSubscriptions = {
     let onMouseMove = (updatePosition, event) => {
-      // [%log.debug "MouseMove"; ("", "")];
       Webapi.Dom.(event->MouseEvent.preventDefault);
 
       let point =
@@ -226,12 +225,10 @@ module Make = (Context: Context.T) => {
     };
 
     let onMouseUp = (startDropping, _event) => {
-      [%log.debug "MouseUp"; ("", "")];
       startDropping->React.Ref.current();
     };
 
     let onKeyDown = (cancelDrag, event) => {
-      [%log.debug "KeyDown"; ("", "")];
       switch (event->Events.Keyboard.Dom.key) {
       | Esc =>
         // Stopping propagation to prevent closing modal while dragging
@@ -344,20 +341,25 @@ module Make = (Context: Context.T) => {
 
     let updateGhostPosition =
       React.useRef(_point =>
-        [%log.warn "UpdateGhostPositionNotSet"; ("Point", _point)]
+        BrowserLogger.infoWithData(__MODULE__, "UpdateGhostPositionNotSet", ("Point", _point))
+        //[%log.warn "UpdateGhostPositionNotSet"; ("Point", _point)]
       );
     let updateScrollPosition =
       React.useRef(_ghost =>
-        [%log.warn "UpdateScrollPositionNotSet"; ("Ghost", _ghost)]
+      BrowserLogger.infoWithData(__MODULE__, "UpdateScrollPositionNotSet", ("Ghost", _ghost))
+        //[%log.warn "UpdateScrollPositionNotSet"; ("Ghost", _ghost)]
       );
     let invalidateLayout =
       React.useRef(_ghost =>
-        [%log.warn "InvalidateLayoutNotSet"; ("Ghost", _ghost)]
+        BrowserLogger.infoWithData(__MODULE__, "InvalidateLayoutNotSet", ("Ghost", _ghost))
+        // [%log.warn "InvalidateLayoutNotSet"; ("Ghost", _ghost)]
       );
     let startDropping =
-      React.useRef(() => [%log.warn "StartDroppingNotSet"; ("", "")]);
+      React.useRef(() => BrowserLogger.infoWithData(__MODULE__, "StartDroppingNotSet", ("", "")));
+      //React.useRef(() => [%log.warn "StartDroppingNotSet"; ("", "")]);
     let cancelDrag =
-      React.useRef(() => [%log.warn "CancelDragNotSet"; ("", "")]);
+      React.useRef(() => BrowserLogger.infoWithData(__MODULE__, "CancelDragNotSet",("", "")));
+      //React.useRef(() => [%log.warn "CancelDragNotSet"; ("", "")]);
 
     let (state, dispatch) =
       React.useReducer(
@@ -400,7 +402,8 @@ module Make = (Context: Context.T) => {
               let (ghost, result) =
                 switch (ghost.targetContainer) {
                 | None =>
-                  [%log.debug "StartDropping::NoTargetContainer"; ("", "")];
+                  BrowserLogger.infoWithData(__MODULE__, "StartDropping::NoTargetContainer", ("", ""));
+                  //[%log.debug "StartDropping::NoTargetContainer"; ("", "")];
                   let container =
                     containers
                     ->React.Ref.current
@@ -426,10 +429,11 @@ module Make = (Context: Context.T) => {
 
                 | Some(targetContainerId)
                     when ghost.targetingOriginalContainer =>
-                  [%log.debug
-                    "StartDropping::TargetingOriginalContainer";
-                    ("ContainerId", targetContainerId)
-                  ];
+                  BrowserLogger.infoWithData(__MODULE__, "StartDropping::TargetingOriginalContainer", ("ContainerId", targetContainerId));  
+                  // [%log.debug
+                  //   "StartDropping::TargetingOriginalContainer";
+                  //   ("ContainerId", targetContainerId)
+                  // ];
                   let container =
                     containers
                     ->React.Ref.current
@@ -502,10 +506,11 @@ module Make = (Context: Context.T) => {
                   switch (before) {
                   | Some(`FirstOmegaItemFound(item))
                   | Some(`NextItemAfterLastAlphaFound(item)) =>
-                    [%log.debug
-                      "StartDropping::TargetingOriginalContainer::Result::Before";
-                      ("Item", item)
-                    ];
+                  BrowserLogger.infoWithData(__MODULE__, "StartDropping::TargetingOriginalContainer::Result::Before", ("Item", item));
+                    // [%log.debug
+                    //   "StartDropping::TargetingOriginalContainer::Result::Before";
+                    //   ("Item", item)
+                    // ];
                     let itemGeometry = item.geometry->Option.getExn;
                     let itemRect =
                       Geometry.shiftInternalSibling(
@@ -540,10 +545,11 @@ module Make = (Context: Context.T) => {
                     );
 
                   | Some(`SearchingForLastAlphaItem(item)) =>
-                    [%log.debug
-                      "StartDropping::TargetingOriginalContainer::Result::Last";
-                      ("Item", item)
-                    ];
+                  BrowserLogger.infoWithData(__MODULE__, "StartDropping::TargetingOriginalContainer::Result::Last",  ("Item", item));
+                    // [%log.debug
+                    //   "StartDropping::TargetingOriginalContainer::Result::Last";
+                    //   ("Item", item)
+                    // ];
                     let itemGeometry = item.geometry->Option.getExn;
                     let itemRect =
                       Geometry.shiftInternalSibling(
@@ -573,10 +579,11 @@ module Make = (Context: Context.T) => {
                     );
 
                   | None =>
-                    [%log.debug
-                      "StartDropping::TargetingOriginalContainer::Result::None";
-                      ("", "")
-                    ];
+                  BrowserLogger.infoWithData(__MODULE__, "StartDropping::TargetingOriginalContainer::Result::None", ("", ""));
+                    // [%log.debug
+                    //   "StartDropping::TargetingOriginalContainer::Result::None";
+                    //   ("", "")
+                    // ];
                     (
                       {
                         ...ghost,
@@ -635,10 +642,11 @@ module Make = (Context: Context.T) => {
 
                   switch (before) {
                   | Some(item) =>
-                    [%log.debug
-                      "StartDropping::TargetingNewContainer::Result::Before";
-                      ("Item", item)
-                    ];
+                  BrowserLogger.infoWithData(__MODULE__, "StartDropping::TargetingNewContainer::Result::Before", ("Item", item));
+                    // [%log.debug
+                    //   "StartDropping::TargetingNewContainer::Result::Before";
+                    //   ("Item", item)
+                    // ];
                     let itemGeometry = item.geometry->Option.getExn;
                     let itemRect =
                       Geometry.shiftExternalSibling(
@@ -676,10 +684,12 @@ module Make = (Context: Context.T) => {
                   | None =>
                     switch (items->Array.get(items->Array.length - 1)) {
                     | Some(item) =>
-                      [%log.debug
-                        "StartDropping::TargetingNewContainer::Result::Last";
-                        ("Item", item)
-                      ];
+                    BrowserLogger.infoWithData(__MODULE__, "InvalidateLayoStartDropping::TargetingNewContainer::Result::LastutNotSet", 
+                    ("Item", item));
+                      // [%log.debug
+                      //   "StartDropping::TargetingNewContainer::Result::Last";
+                      //   ("Item", item)
+                      // ];
                       let itemGeometry = item.geometry->Option.getExn;
                       let itemRect =
                         Geometry.shiftExternalSibling(
@@ -714,10 +724,11 @@ module Make = (Context: Context.T) => {
                         ),
                       );
                     | None =>
-                      [%log.debug
-                        "StartDropping::TargetingNewContainer::Result::EmptyContainer";
-                        ("", "")
-                      ];
+                    BrowserLogger.infoWithData(__MODULE__, "StartDropping::TargetingNewContainer::Result::EmptyContainer", ("", ""));
+                      // [%log.debug
+                      //   "StartDropping::TargetingNewContainer::Result::EmptyContainer";
+                      //   ("", "")
+                      // ];
                       (
                         {
                           ...ghost,
@@ -943,10 +954,11 @@ module Make = (Context: Context.T) => {
 
               Subscriptions.{
                 install: () => {
-                  [%log.debug
-                    "MouseSubscriptions::SubscriptionsInstalled";
-                    ("ItemId", itemId)
-                  ];
+                  BrowserLogger.infoWithData(__MODULE__, "MouseSubscriptions::SubscriptionsInstalled", ("ItemId", itemId));
+                  // [%log.debug
+                  //   "MouseSubscriptions::SubscriptionsInstalled";
+                  //   ("ItemId", itemId)
+                  // ];
                   Window.addMouseMoveEventListener(onMouseMove, window);
                   Window.addMouseUpEventListener(onMouseUp, window);
                   HtmlElement.addKeyDownEventListener(
@@ -961,10 +973,11 @@ module Make = (Context: Context.T) => {
                   );
                 },
                 drop: () => {
-                  [%log.debug
-                    "MouseSubscriptions::SubscriptionsDropped";
-                    ("ItemId", itemId)
-                  ];
+                  BrowserLogger.infoWithData(__MODULE__, "MouseSubscriptions::SubscriptionsDropped",  ("ItemId", itemId));
+                  // [%log.debug
+                  //   "MouseSubscriptions::SubscriptionsDropped";
+                  //   ("ItemId", itemId)
+                  // ];
                   Window.removeMouseMoveEventListener(onMouseMove, window);
                   Window.removeMouseUpEventListener(onMouseUp, window);
                   HtmlElement.removeKeyDownEventListener(
@@ -991,10 +1004,11 @@ module Make = (Context: Context.T) => {
 
               Subscriptions.{
                 install: () => {
-                  [%log.debug
-                    "TouchSubscriptions::SubscriptionsInstalled";
-                    ("ItemId", itemId)
-                  ];
+                  BrowserLogger.infoWithData(__MODULE__, "TouchSubscriptions::SubscriptionsInstalled",  ("ItemId", itemId));
+                  // [%log.debug
+                  //   "TouchSubscriptions::SubscriptionsInstalled";
+                  //   ("ItemId", itemId)
+                  // ];
                   Window.addEventListener("touchmove", onTouchMove, window);
                   Window.addEventListener("touchend", onTouchEnd, window);
                   Window.addEventListener(
@@ -1014,10 +1028,11 @@ module Make = (Context: Context.T) => {
                   );
                 },
                 drop: () => {
-                  [%log.debug
-                    "TouchSubscriptions::SubscriptionsDropped";
-                    ("ItemId", itemId)
-                  ];
+                  BrowserLogger.infoWithData(__MODULE__, "TouchSubscriptions::SubscriptionsDropped", ("ItemId", itemId));
+                  // [%log.debug
+                  //   "TouchSubscriptions::SubscriptionsDropped";
+                  //   ("ItemId", itemId)
+                  // ];
                   Window.removeEventListener(
                     "touchmove",
                     onTouchMove,
@@ -1855,10 +1870,11 @@ module Make = (Context: Context.T) => {
     //       https://bugs.webkit.org/show_bug.cgi?id=184250
     React.useEffect1(
       () => {
-        [%log.debug
-          "AddTouchMoveWebkitEventListener";
-          ("Status", state.status)
-        ];
+        BrowserLogger.infoWithData(__MODULE__, "AddTouchMoveWebkitEventListener", ("Status", state.status));
+        // [%log.debug
+        //   "AddTouchMoveWebkitEventListener";
+        //   ("Status", state.status)
+        // ];
         let preventTouchMoveInWebkit = event =>
           Webapi.Dom.(
             switch (state.status) {
@@ -1871,10 +1887,11 @@ module Make = (Context: Context.T) => {
 
         Some(
           () => {
-            [%log.debug
-              "RemoveTouchMoveWebkitEventListener";
-              ("Status", state.status)
-            ];
+            BrowserLogger.infoWithData(__MODULE__, "RemoveTouchMoveWebkitEventListener", ("Status", state.status));
+            // [%log.debug
+            //   "RemoveTouchMoveWebkitEventListener";
+            //   ("Status", state.status)
+            // ];
             preventTouchMoveInWebkit->Events.unsubscribeFromTouchMove;
           },
         );

@@ -69,7 +69,8 @@ module Make = (Context: Context.T) => {
       () =>
         switch (prevStatus, ctx.status) {
         | (Some(StandBy), Collecting(_)) =>
-          [%log.debug "RegisterItem"; ("ContainerId", containerId)];
+          BrowserLogger.infoWithData(__MODULE__, "RegisterItem", ("ContainerId", containerId));
+          //[%log.debug "RegisterItem"; ("ContainerId", containerId)];
           ctx.registerContainer({
             id: containerId,
             axis,
